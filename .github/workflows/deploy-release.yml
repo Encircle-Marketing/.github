@@ -1,0 +1,47 @@
+name: Create and publish releases
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+      - '*-v*'
+  pull_request:
+    branches:
+      - 'main'
+    types:
+      - opened
+      - reopened
+      - review_requested
+      - closed
+      - synchronize
+      - enqueued
+
+env:
+  GIT_REGISTRY: ghcr.io
+  AWS_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  release:
+    if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'synchronize' && github.actor == 'EncircleMarketing') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+      pull-requests: write
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.AUTOMATION_TOKEN }}
+          config-file: .github/releases/release-config.json
+          manifest-file: .github/releases/.release-manifest.json

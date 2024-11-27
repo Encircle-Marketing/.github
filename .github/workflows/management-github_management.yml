@@ -1,0 +1,25 @@
+name: Management - Github Management
+on:
+  issues:
+    types: [ opened, edited, closed, reopened ]
+  pull_request:
+    types: [ opened, edited, closed, reopened, synchronize ]
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  release-mastermind:
+    name: Release Mastermind
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Release Mastermind
+        uses: Resnovas/smartcloud@1.0.0-beta.8 # 1.0.0-beta.8
+        with:
+          GITHUB_TOKEN: ${{ secrets.AUTOMATION_TOKEN || github.token }}
+          config: .github/config.json
+          configRef: main
